@@ -1,0 +1,55 @@
+sets:
+- patches:
+  - 0: {bank: 0, program: 0, soundfont: FluidR3_GM.sf2}
+    1: {bank: 0, program: 33, soundfont: FluidR3_GM.sf2}
+    9: {bank: 128, program: 0, soundfont: FluidR3_GM.sf2}
+    name: Jazz Combo
+    router_rules:
+    - chan: [0, 15, 1, 0]
+      par1: [64, 64, 1, 0]
+      type: cc
+  - 0: {bank: 0, program: 5, soundfont: FluidR3_GM.sf2}
+    name: EP Time
+    router_rules:
+    - {type: cc}
+  - 0: {bank: 0, program: 62, soundfont: FluidR3_GM.sf2}
+    name: Horn Section
+    router_rules:
+    - {type: cc}
+  - 0: {bank: 0, program: 80, soundfont: FluidR3_GM.sf2}
+    name: Square Grit
+    router_rules:
+    - {type: cc}
+    - {type: cpress}
+    - {type: kpress}
+  - 0: {bank: 0, program: 81, soundfont: FluidR3_GM.sf2}
+    name: Too Much Saw
+    router_rules:
+    - {type: cc}
+    - {type: cpress}
+    - {type: kpress}
+  - 0: {bank: 0, program: 87, soundfont: FluidR3_GM.sf2}
+    name: Formerly Known
+    router_rules:
+    - {type: cc}
+    - {type: cpress}
+    - {type: kpress}
+  - 0: {bank: 0, program: 38, soundfont: FluidR3_GM.sf2}
+    name: Kill The Bass Player
+    router_rules:
+    - par1: [24, 127, 1, -24]
+      type: note
+    - type: cc
+  router_rules:
+  - {type: note}
+  - {type: prog}
+  - {type: pbend}
+- patches:
+  - 0: {bank: 0, program: 6, soundfont: FluidR3_GM.sf2}
+    name: Beethoven
+  - 0: {bank: 0, program: 19, soundfont: FluidR3_GM.sf2}
+    name: Big Church
+settings:
+  fluidsettings: {audio.period-size: 64, audio.periods: 3}
+  gain: 0.4
+  sfdirs: [/home/pi/, /usr/share/sounds/sf2/]
