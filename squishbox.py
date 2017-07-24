@@ -12,21 +12,12 @@ POLL_TIME=0.025
 BTN_L=13
 BTN_R=12
 
-"""
-JAMPI_R=1
-JAMPI_L=2
-JAMPI_R_HELD=3
-JAMPI_L_HELD=4
-JAMPI_R_HELD_LONG=5
-JAMPI_L_HELD_LONG=6
-"""
-
-JAMPI_NULL=0
-JAMPI_TAP=1
-JAMPI_PRESS=2
-JAMPI_HOLD=3
-JAMPI_LONGPRESS=4
-JAMPI_LONGHOLD=5
+SQBX_NULL=0
+SQBX_TAP=1
+SQBX_PRESS=2
+SQBX_HOLD=3
+SQBX_LONGPRESS=4
+SQBX_LONGHOLD=5
 
 r_holdtime=0
 r_state=0
@@ -37,45 +28,45 @@ def poll_stompswitches():
     if GPIO.input(BTN_R)==GPIO.HIGH:
         r_holdtime += POLL_TIME        
         if r_holdtime>=5.0:
-            if r_state<JAMPI_LONGPRESS:
-                r_state=JAMPI_LONGPRESS
+            if r_state<SQBX_LONGPRESS:
+                r_state=SQBX_LONGPRESS
             else:
-                r_state=JAMPI_LONGHOLD
+                r_state=SQBX_LONGHOLD
         elif r_holdtime>=1.5:
-            if r_state<JAMPI_PRESS:
-                r_state=JAMPI_PRESS
+            if r_state<SQBX_PRESS:
+                r_state=SQBX_PRESS
             else:
-                r_state=JAMPI_HOLD
+                r_state=SQBX_HOLD
     if GPIO.input(BTN_L)==GPIO.HIGH:
         l_holdtime += POLL_TIME        
         if l_holdtime>=5.0:
-            if l_state<JAMPI_LONGPRESS:
-                l_state=JAMPI_LONGPRESS
+            if l_state<SQBX_LONGPRESS:
+                l_state=SQBX_LONGPRESS
             else:
-                r_state=JAMPI_LONGHOLD
+                r_state=SQBX_LONGHOLD
         elif l_holdtime>=1.5:
-            if l_state<JAMPI_PRESS:
-                l_state=JAMPI_PRESS
+            if l_state<SQBX_PRESS:
+                l_state=SQBX_PRESS
             else:
-                l_state=JAMPI_HOLD
+                l_state=SQBX_HOLD
     if GPIO.input(BTN_R)==GPIO.LOW:
-        if r_holdtime>0 and r_state<JAMPI_TAP:
-            r_state=JAMPI_TAP
+        if r_holdtime>0 and r_state<SQBX_TAP:
+            r_state=SQBX_TAP
         else:
             r_holdtime=0
-            r_state=JAMPI_NULL
+            r_state=SQBX_NULL
     if GPIO.input(BTN_L)==GPIO.LOW:
-        if l_holdtime>0 and l_state<JAMPI_TAP:
-            l_state=JAMPI_TAP
+        if l_holdtime>0 and l_state<SQBX_TAP:
+            l_state=SQBX_TAP
         else:
             l_holdtime=0
-            l_state=JAMPI_NULL
+            l_state=SQBX_NULL
 
 def waitfortap(t):
     for i in range(int(t/POLL_TIME)):
         sleep(POLL_TIME)
         poll_stompswitches()
-        if r_state==JAMPI_TAP or l_state==JAMPI_TAP:
+        if r_state==SQBX_TAP or l_state==SQBX_TAP:
             return
 
 def waitforrelease(tmin=0):
@@ -84,7 +75,7 @@ def waitforrelease(tmin=0):
         sleep(POLL_TIME)
         t+=POLL_TIME
         poll_stompswitches()
-        if r_state+l_state==JAMPI_NULL and t>=tmin:
+        if r_state+l_state==SQBX_NULL and t>=tmin:
             return
             
 def midi_connect():
@@ -108,15 +99,15 @@ def menu_mode():
         for j in range(int(10/POLL_TIME)):
             sleep(POLL_TIME)
             poll_stompswitches()
-            if r_state+l_state==JAMPI_NULL:
+            if r_state+l_state==SQBX_NULL:
                 continue
-            elif r_state==JAMPI_TAP:
+            elif r_state==SQBX_TAP:
                 i=(i+1)%8
                 break
-            elif l_state==JAMPI_TAP:
+            elif l_state==SQBX_TAP:
                 i=(i-1)%8
                 break
-            elif l_state==JAMPI_PRESS or r_state==JAMPI_PRESS:
+            elif l_state==SQBX_PRESS or r_state==SQBX_PRESS:
                 if i==0:
                     update_patch()
                     lcd.cursor_pos=(1,0)
@@ -144,7 +135,7 @@ def menu_mode():
                 elif i==7:
                     wifi_status()
                 return
-            elif r_state==JAMPI_LONGPRESS or l_state==JAMPI_LONGPRESS:
+            elif r_state==SQBX_LONGPRESS or l_state==SQBX_LONGPRESS:
                 shutdown_confirm()
                 return
         else:
@@ -156,9 +147,9 @@ def shutdown_confirm():
     for i in range(int(10/POLL_TIME)):
         sleep(POLL_TIME)
         poll_stompswitches()
-        if l_state==JAMPI_TAP or r_state==JAMPI_TAP:
+        if l_state==SQBX_TAP or r_state==SQBX_TAP:
             return
-        if l_state==JAMPI_PRESS or r_state==JAMPI_PRESS:
+        if l_state==SQBX_PRESS or r_state==SQBX_PRESS:
             lcd.clear()
             lcd.write_string("Shutting down...")
             call('sudo shutdown -h now'.split())
@@ -188,23 +179,23 @@ def choose_patchbank():
                 lcd.cursor_pos=(0,0)
                 lcd.write_string("  ")
             poll_stompswitches()
-            if r_state+l_state==JAMPI_NULL:
+            if r_state+l_state==SQBX_NULL:
                 continue
-            elif r_state==JAMPI_TAP:
+            elif r_state==SQBX_TAP:
                 sno=(sno+1)%len(sets)
                 patches=sets[sno]['patches']
                 pno=0
                 load_patch()
                 set_chorus_reverb()
                 break
-            elif l_state==JAMPI_TAP:
+            elif l_state==SQBX_TAP:
                 sno=(sno-1)%len(sets)
                 patches=sets[sno]['patches']
                 pno=0
                 load_patch()
                 set_chorus_reverb()
                 break
-            elif l_state==JAMPI_PRESS or r_state==JAMPI_PRESS:
+            elif l_state==SQBX_PRESS or r_state==SQBX_PRESS:
                 return
         else:
             return     
@@ -220,11 +211,11 @@ def modify_gain():
         for i in range(int(5/POLL_TIME)):
             sleep(POLL_TIME)
             poll_stompswitches()
-            if r_state+l_state==JAMPI_NULL:
+            if r_state+l_state==SQBX_NULL:
                 continue
-            elif r_state>JAMPI_NULL:
+            elif r_state>SQBX_NULL:
                 settings['gain']+=0.1
-            elif l_state>JAMPI_NULL:
+            elif l_state>SQBX_NULL:
                 settings['gain']-=0.1
             if settings['gain']>5.0:
                 settings['gain']=5.0
@@ -246,11 +237,11 @@ def enter_fxunitparam(param, format, inc, min, max):
         for i in range(int(5/POLL_TIME)):
             sleep(POLL_TIME)
             poll_stompswitches()
-            if r_state+l_state==JAMPI_NULL:
+            if r_state+l_state==SQBX_NULL:
                 continue
-            elif r_state>JAMPI_NULL:
+            elif r_state>SQBX_NULL:
                 val+=inc
-            elif l_state>JAMPI_NULL:
+            elif l_state>SQBX_NULL:
                 val-=inc
             if val>max:
                 val=max
@@ -281,15 +272,15 @@ def modify_fxunit():
         for j in range(int(5/POLL_TIME)):
             sleep(POLL_TIME)
             poll_stompswitches()
-            if r_state+l_state==JAMPI_NULL:
+            if r_state+l_state==SQBX_NULL:
                 continue
-            elif r_state==JAMPI_TAP:
+            elif r_state==SQBX_TAP:
                 i=(i+1)%9
                 break
-            elif l_state==JAMPI_TAP:
+            elif l_state==SQBX_TAP:
                 i=(i-1)%9
                 break
-            elif l_state==JAMPI_PRESS or r_state==JAMPI_PRESS:
+            elif l_state==SQBX_PRESS or r_state==SQBX_PRESS:
                 lcd.clear()
                 if i==0:
                     lcd.write_string("Chorus Voices   ")
@@ -404,6 +395,7 @@ def update_patch():
         if 'cc' in p[ch]:
             del p[ch]['cc']
 # check for any nonzero cc values, avoid those reserved for special functions
+#   (get_cc seems to return zero if no cc's have been sent since the last program change)
         for cc in [1,2,3,5,7,9]+range(11,32)+range(33,64)+range(70,96)+range(102,120):
             val=fluid.get_cc(ch,cc)
             if val>0:
@@ -544,17 +536,17 @@ while True:
                 lcd.write_string("%-10s" % (patches[pno]['name'][:10]))
                 st=0
         poll_stompswitches()
-        if r_state+l_state==JAMPI_NULL:
+        if r_state+l_state==SQBX_NULL:
             continue
-        elif r_state==JAMPI_TAP:
+        elif r_state==SQBX_TAP:
             pno=(pno+1)%len(patches)
             load_patch()
             break
-        elif l_state==JAMPI_TAP:
+        elif l_state==SQBX_TAP:
             pno=(pno-1)%len(patches)
             load_patch()
             break
-        elif r_state==JAMPI_PRESS or l_state==JAMPI_PRESS:
+        elif r_state==SQBX_PRESS or l_state==SQBX_PRESS:
             menu_mode()
             lcd.clear()
             load_patch()
