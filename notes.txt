@@ -1,0 +1,27 @@
+squishbox operation
+
+button states: tap, press, hold, longpress, longhold
+buttons:
+
+left
+  tap: -/dec
+  hold: mode/back
+    FX Pedal, Patch Change, MIDI Play
+  longhold: shutdown
+
+right
+  tap: +/inc
+  hold: menu/accept
+    depends on mode
+    Patch Change:
+      Update Patch
+      Save New Patch
+    FX Pedal:
+      
+
+  longhold: system menu
+    Wifi Status
+    Bluetooth Pair
+    MIDI Connect
+    Restart
+

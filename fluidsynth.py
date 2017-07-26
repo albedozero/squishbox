@@ -313,7 +313,7 @@ fluid_midi_router_rule_set_param1 = cfunc('fluid_midi_router_rule_set_param1', N
                                     ('mul', c_float, 1),
                                     ('add', c_int, 1))
                                     
-fluid_midi_router_rule_set_param2 = cfunc('fluid_midi_router_rule_set_param1', None,
+fluid_midi_router_rule_set_param2 = cfunc('fluid_midi_router_rule_set_param2', None,
                                     ('rule', c_void_p, 1),
                                     ('min', c_int, 1),
                                     ('max', c_int, 1),

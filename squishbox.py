@@ -27,24 +27,24 @@ def poll_stompswitches():
     global r_holdtime, r_state, l_holdtime, l_state
     if GPIO.input(BTN_R)==GPIO.HIGH:
         r_holdtime += POLL_TIME        
-        if r_holdtime>=5.0:
+        if r_holdtime>=3.5:
             if r_state<SQBX_LONGPRESS:
                 r_state=SQBX_LONGPRESS
             else:
                 r_state=SQBX_LONGHOLD
-        elif r_holdtime>=1.5:
+        elif r_holdtime>=1.0:
             if r_state<SQBX_PRESS:
                 r_state=SQBX_PRESS
             else:
                 r_state=SQBX_HOLD
     if GPIO.input(BTN_L)==GPIO.HIGH:
         l_holdtime += POLL_TIME        
-        if l_holdtime>=5.0:
+        if l_holdtime>=3.5:
             if l_state<SQBX_LONGPRESS:
                 l_state=SQBX_LONGPRESS
             else:
                 r_state=SQBX_LONGHOLD
-        elif l_holdtime>=1.5:
+        elif l_holdtime>=1.0:
             if l_state<SQBX_PRESS:
                 l_state=SQBX_PRESS
             else:
@@ -136,11 +136,47 @@ def menu_mode():
                     wifi_status()
                 return
             elif r_state==SQBX_LONGPRESS or l_state==SQBX_LONGPRESS:
-                shutdown_confirm()
+                system_menu()
                 return
         else:
             return
-        
+
+def system_menu():
+    i=0
+    while True:
+        lcd.clear()
+        lcd.write_string("%16s" % ['Shutdown?',
+                                   'Restart?',
+                                   'Reboot?'][i])
+        for j in range(int(10/POLL_TIME)):
+            sleep(POLL_TIME)
+            poll_stompswitches()
+            if r_state+l_state==SQBX_NULL:
+                continue
+            elif r_state==SQBX_TAP:
+                i=(i+1)%3
+                break
+            elif l_state==SQBX_TAP:
+                i=(i-1)%3
+                break
+            elif l_state==SQBX_PRESS or r_state==SQBX_PRESS:
+                if i==0:
+                    lcd.clear()
+                    lcd.write_string("Shutting down...")
+                    call('sudo shutdown -h now'.split())
+                elif i==1:
+                    lcd.clear()
+                    lcd.write_string("Restarting...")
+                    waitforrelease(1)
+                    call('sudo python squishbox.py &'.split())
+                elif i==2:
+                    lcd.clear()
+                    lcd.write_string("Rebooting...")
+                    call('sudo reboot'.split())
+        else:
+            return
+ 
+            
 def shutdown_confirm():
     lcd.clear()
     lcd.write_string("Shutdown?       ")
@@ -184,14 +220,14 @@ def choose_patchbank():
             elif r_state==SQBX_TAP:
                 sno=(sno+1)%len(sets)
                 patches=sets[sno]['patches']
-                pno=0
+                pno=min(pno, len(patches)-1)
                 load_patch()
                 set_chorus_reverb()
                 break
             elif l_state==SQBX_TAP:
                 sno=(sno-1)%len(sets)
                 patches=sets[sno]['patches']
-                pno=0
+                pno=min(pno, len(patches)-1)
                 load_patch()
                 set_chorus_reverb()
                 break
@@ -350,14 +386,13 @@ def load_patch():
     fluid.router_clear()
     if 'router_rules' in sets[sno]:
         for rule in sets[sno]['router_rules']:
-            if rule=='default':
-                fluid.router_default()
-            else:
-                midi_route(**rule)
+            midi_route(**rule)
     if 'router_rules' in p:
         for rule in p['router_rules']:
             if rule=='default':
                 fluid.router_default()
+            elif rule=='clear':
+                fluid.router_clear()
             else:
                 midi_route(**rule)
     if 'rule' not in locals():
@@ -395,10 +430,9 @@ def update_patch():
         if 'cc' in p[ch]:
             del p[ch]['cc']
 # check for any nonzero cc values, avoid those reserved for special functions
-#   (get_cc seems to return zero if no cc's have been sent since the last program change)
         for cc in [1,2,3,5,7,9]+range(11,32)+range(33,64)+range(70,96)+range(102,120):
             val=fluid.get_cc(ch,cc)
-            if val>0:
+            if val>0: # 0 --> cc not changed
                 if 'cc' not in p[ch]:
                     p[ch]['cc']={}
                 p[ch]['cc'][cc]=val                    
@@ -531,7 +565,7 @@ while True:
             if t<len(patches[pno]['name'])-6:
                 lcd.cursor_pos=(0,6)
                 lcd.write_string("%-10s" % (patches[pno]['name'][t-3:t+7]))
-            elif t>len(patches[pno]['name'])+3:
+            elif t>len(patches[pno]['name'])+1:
                 lcd.cursor_pos=(0,6)
                 lcd.write_string("%-10s" % (patches[pno]['name'][:10]))
                 st=0
