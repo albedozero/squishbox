@@ -56,7 +56,7 @@ sets:
   - {type: cc, chan: [0, 0, 0, 9], par1: [19, 19, 0, 7]} # and midi channel 10
 # each set can have its own reverb/chorus parameters
   reverb_width: 0.5
-  reverb_size: 0.2
+  reverb_roomsize: 0.2
   reverb_level: 0.9
 
 - patches: # here begins a second set (access via "choose bank" on stompbox)
@@ -72,7 +72,7 @@ sets:
   - {type: pbend}
   - {type: cc, chan: [0, 15, 1, 0], par1: [64, 64, 1, 0]}
   reverb_width: 3.5
-  reverb_size: 0.8
+  reverb_roomsize: 0.8
 #  reverb_level: 0.9 # unspecified parameters remain at current values
   
 - patches: # yet another set
