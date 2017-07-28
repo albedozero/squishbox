@@ -86,6 +86,7 @@ sets:
   
 # global settings
 settings:
-  fluidsettings: {audio.period-size: 64, audio.periods: 3} # settings passed to fluidsynth
+  fluidsettings: {audio.period-size: 64, audio.periods: 3} # settings passed directly to fluidsynth
+  # above are the best balance between low latency/good sound quality I've found, feel free to experiment
   gain: 0.4
   sfdirs: [/home/pi/, /usr/share/sounds/sf2/] # directories to search for soundfonts

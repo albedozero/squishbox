@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import RPi.GPIO as GPIO
-from RPLCD import CharLCD, BacklightMode
+from RPLCD import CharLCD
 from time import sleep
 from subprocess import call
 from os import getpid
@@ -162,7 +162,7 @@ def system_menu():
             elif l_state==SQBX_PRESS or r_state==SQBX_PRESS:
                 if i==0:
                     lcd.clear()
-                    lcd.write_string("Shutting down...")
+                    lcd.write_string("Shutting down...Wait 30s, unplug")
                     call('sudo shutdown -h now'.split())
                 elif i==1:
                     lcd.clear()
@@ -506,7 +506,6 @@ GPIO.setup(BTN_R, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 lcd = CharLCD(pin_rs=17, pin_rw=None, pin_e=18, pins_data=[27,22,23,24],
                     numbering_mode=GPIO.BCM,
                     pin_backlight=5, backlight_enabled=True,
-                    backlight_mode=BacklightMode.active_high,
                     cols=16, rows=2)
 lcd.clear()
 lcd.write_string("squishbox v0.96")
