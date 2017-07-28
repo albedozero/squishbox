@@ -6,7 +6,8 @@
 	Python bindings for FluidSynth
 
 	Copyright 2008, Nathan Whitehead <nwhitehe@gmail.com>
-	Currently maintained by Bart Spaans <onderstekop@gmail.com>
+
+    
 	Released under the LGPL
 
 	This module contains python bindings for FluidSynth.  FluidSynth is a
@@ -19,27 +20,26 @@
 	FluidSynth works on all major platforms, so pyFluidSynth should also.
 
 ================================================================================
-Adding stuff to help with playing live -- BMP 2016
+
+Added lots of bindings and stuff to help with playing live -- Bill Peterson <albedozero@gmail.com>
 """
 
 import time
-from ctypes import *  # bad form, should change to import ctypes as ct or something
+from ctypes import *
 from ctypes.util import find_library
 
 # A short circuited or expression to find the FluidSynth library
 # (mostly needed for Windows distributions of libfluidsynth supplied with QSynth)
 
-lib = find_library('fluidsynth') or find_library('libfluidsynth') or find_library('libfluidsynth-1')
-
+lib = find_library('fluidsynth') or \
+    find_library('libfluidsynth') or \
+    find_library('libfluidsynth-1')
 
 if lib is None:
-	raise ImportError, "Couldn't find the FluidSynth library."
-
+	raise ImportError("Couldn't find the FluidSynth library.")
 
 # Dynamically link the FluidSynth library
 _fl = CDLL(lib)
-
-
 
 # Helper function for declaring function prototypes
 def cfunc(name, result, *args):
@@ -179,31 +179,6 @@ fluid_synth_get_channel_info = cfunc('fluid_synth_get_channel_info', c_int,
                                   ('chan', c_int, 1),
                                   ('info', POINTER(fluid_synth_channel_info_t), 1))
 
-"""                                  
---BMP: Wanted to add capability for creating modulators on the fly, but
-realized it's way more complicated than I hoped .. probably will not do this ever
-
-class fluid_mod_t(Structure):
-	_fields_ = [
-		('dest', c_ubyte),
-		('src1', c_ubyte),
-		('flags1', c_ubyte),
-		('src2', c_ubyte),
-		('flags2', c_ubyte),
-		('amount', c_double),
-        ('next', POINTER(fluid_mod_t))]
-							  
-fluid_mod_new = cfunc('fluid_mod_new', POINTER(fluid_mod_t))
-
-fluid_mod_delete = cfunc('fluid_mod_delete', None,
-                            ('mod', POINTER(fluid_mod_t))
-                            
-fluid_mod_set_source1
-fluid_mod_set_source2
-fluid_mod_set_dest
-fluid_mod_set_amount
-"""
-
 fluid_synth_set_reverb_full = cfunc('fluid_synth_set_reverb_full', c_int,
                                     ('synth', c_void_p, 1),
                                     ('set', c_int, 1),
@@ -336,7 +311,7 @@ def fluid_synth_write_s16_stereo(synth, len):
 
 class Synth:
     """Synth represents a FluidSynth synthesizer"""
-    def __init__(self, gain=0.2, samplerate=44100, **kwargs):
+    def __init__(self, gain=0.2, samplerate=44100, channels=256, **kwargs):
         """Create new synthesizer object to control sound generation
 
         Optional keyword arguments:
@@ -348,8 +323,9 @@ class Synth:
         st = new_fluid_settings()
         fluid_settings_setnum(st, 'synth.gain', gain)
         fluid_settings_setnum(st, 'synth.sample-rate', samplerate)
-        # No reason to limit ourselves to 16 channels
-        fluid_settings_setint(st, 'synth.midi-channels', 256)
+        fluid_settings_setint(st, 'synth.midi-channels', channels)
+        for opt,val in kwargs.iteritems():
+            self.setting(opt, val)
         self.settings = st
         self.synth = new_fluid_synth(st)
         self.audio_driver = None

@@ -519,7 +519,7 @@ sets = config['sets']
 settings = config['settings']
 
 # start an instance of fluidsynth
-fluid=fluidsynth.Synth()
+fluid=fluidsynth.Synth(channels=16)
 for opt,val in settings['fluidsettings'].iteritems():
     fluid.setting(opt,val)
 fluid.setting('synth.gain', settings['gain'])
