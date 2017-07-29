@@ -67,7 +67,7 @@ The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.
     - *0-15* - the MIDI channel the following soundfont preset will be applied to; N.B. not all channels have to be assigned; channels with no assignment will retain whatever preset they were last assigned
       - *soundfont* - a soundfont file
       - *bank* (required) - the bank number in the soundfont file
-      - *program* (required) - the present number in the soundfont file
+      - *program* (required) - the program number in the soundfont file
       - *cc* - a dictionary of control change numbers: values(0-127) to send on this channel when the patch is selected. Any modified CC values will be saved to the patch if it is updated.
     - *router_rules* - router rules for this patch, applied after set-wide router rules; if no router rules are specified by set or patch defaults to 1-1 routing for all types
 
