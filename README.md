@@ -3,18 +3,27 @@ Python fluidsynth wrapper/interface for a stompbox sound module powered by fluid
 
 ## Explanation
 This project provides the software front-end for a sound module consisting of a small linux SBC (e.g. a Raspberry Pi) connected to a 16x2 character LCD, a couple of momentary stompswitches for user input, and a USB sound card for audio output - perhaps something like this:
+
 ![SquishBox image](/images/example.jpg)
+
 The wiring could be realized as in this diagram:
+
 ![SquishBox schematic](/images/squishboxhat.png)
 The *squishbox.py* python script controls the LCD, handles the buttons, and uses the included version of the [PyFluidSynth]() library *fluidsynth.py* to call and interact with fluidsynth.
 
 ## Installation
 Files in the package may be copied to any convenient place (i.e. */home/pi*). [FluidSynth](http://www.fluidsynth.org) must be installed. On Raspbian the simplest method is to use aptitude from the command line:
-```sudo apt-get install fluidsynth```
+```
+sudo apt-get install fluidsynth
+```
 The Python script requires non-standard libraries RPi.GPIO, PyYaml, and RPLCD. Recent versions of Raspbian should have the first installed by default. The second two can be installed from PyPI by entering:
-```sudo pip install RPLCD pyyaml```
+```
+sudo pip install RPLCD pyyaml
+```
 The user will most likely want the software to run at bootup. To effect this, modify the */etc/rc.local* file, adding the following just before the final `exit 0` line:
-```sudo python /home/pi/squishbox.py &```
+```
+sudo python /home/pi/squishbox.py &
+```
 
 ## Usage
 Short taps of either button will switch between instrument patches. Holding either button for a approximately two seconds enters a settings menu, and holding either button for roughly five seconds provides the option to restart the program, reboot the Pi, or shut the Pi down. The settings menu options are:
@@ -35,7 +44,7 @@ The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.
   - *gain* - initial gain level for fluidsynth
   - *fluidsettings* - dictionary of options: values to pass directly to fluidsynth
   - *soundfont* - a default soundfont file to use for all patches if not specified by the patch
-- *sets* - a sequence of one or more sequences of patches
+- *sets* - a sequence of patch lists and chorus, reverb, and MIDI router settings for each one
   - *chorus_level* - output level of chorus unit
   - *chorus_nr* - number of delay lines for chorus
   - *chorus_depth* - modulation depth (ms)
