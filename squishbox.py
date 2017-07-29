@@ -522,8 +522,8 @@ settings = config['settings']
 fluid=fluidsynth.Synth(channels=16)
 for opt,val in settings['fluidsettings'].iteritems():
     fluid.setting(opt,val)
-fluid.setting('synth.gain', settings['gain'])
-fluid.setting('synth.midi-channels', 16)
+if 'gain' in settings:
+    fluid.setting('synth.gain', settings['gain'])
 
 # initialize the audio and midi devices
 fluid.start(driver='alsa', device='hw:Device,0', midi_driver='alsa_seq')
