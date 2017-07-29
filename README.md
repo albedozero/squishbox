@@ -64,7 +64,7 @@ The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.
       - *par2* - routes parameter 2 if there is one (e.g. note velocity)
   - *patches* a sequence of patches, where each patch is a dictionary containing the following items
     - *name* (required) - this text is displayed on the LCD when the patch is selected
-    - *0: - 15:* the MIDI channel the following soundfont preset will be applied to; N.B. not all channels have to be assigned; channels with no assignment will retain whatever preset they were last assigned
+    - *0 - 15* the MIDI channel the following soundfont preset will be applied to; N.B. not all channels have to be assigned; channels with no assignment will retain whatever preset they were last assigned
       - *soundfont* - a soundfont file
       - *bank* (required) - the bank number in the soundfont file
       - *program* (required) - the present number in the soundfont file
