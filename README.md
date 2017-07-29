@@ -2,7 +2,7 @@
 Python fluidsynth wrapper/interface for a stompbox sound module powered by fluidsynth (because that's what happens if you stomp on a box full of fluid).
 
 ## Explanation
-This project provides the software front-end for a sound module consisting of a small linux SBC (e.g. a Raspberry Pi) connected to a 16x2 character LCD, a couple of momentary stompswitches for user input, and a USB sound card for audio output - perhaps something like this:
+This project provides the software front-end for a sound module consisting of a small linux SBC (e.g. a Raspberry Pi) connected to a 16x2 character LCD, a couple of momentary stompswitches for user input, and a USB sound card for audio output. An example is described in [this instructable](https://www.instructables.com/id/Raspberry-Pi-Stompbox-Synth-Module/). The end result could look something like this:
 
 ![SquishBox image](/images/example.jpg)
 
@@ -37,7 +37,7 @@ Short taps of either button will switch between instrument patches. Holding eith
 - Wifi Status - report the current IP address
 
 ## Configuration
-The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.2/spec.html) format and specifies things such as patch/effect settings, soundfont locations, and MIDI routing. The file should be structured like so:
+The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.2/spec.html) format and specifies things such as patch/effect settings, soundfont locations, and MIDI routing. The included file can be extensively modified to use different soundfonts and produce different patches and behavior. The expected structure of the file is:
 
 - *settings* - a dictionary of global program settings
   - *sfdirs* (required) - sequence of paths to search for soundfonts used in patches
@@ -62,9 +62,9 @@ The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.
       - *chan* - a sequence describing the channel routing in the form *min, max, mul, add*, where *min-max* is the incoming channel range to accept, and the channel number is then multiplied by *mul* and added to *add*.
       - *par1* - routes parameter 1 (e.g note value or CC value) in the same way as *chan*
       - *par2* - routes parameter 2 if there is one (e.g. note velocity)
-  - *patches* a sequence of patches
+  - *patches* a sequence of patches, where each patch is a dictionary containing the following items
     - *name* (required) - this text is displayed on the LCD when the patch is selected
-    - *0: - 15:* the MIDI channel the following soundfont preset will be applied to; not all channels have to be assigned - channels with no assignment will retain whatever preset they were last assigned
+    - *0: - 15:* the MIDI channel the following soundfont preset will be applied to; N.B. not all channels have to be assigned; channels with no assignment will retain whatever preset they were last assigned
       - *soundfont* - a soundfont file
       - *bank* (required) - the bank number in the soundfont file
       - *program* (required) - the present number in the soundfont file
