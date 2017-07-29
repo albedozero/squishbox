@@ -57,7 +57,7 @@ The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.
   - *router_rules* - a sequence of MIDI message routing rules to send to fluidsynth when each patch in this set is selected; a rule can be one of the following:
     - *clear* - clears any previous routing rules
     - *default* - clears any previous routing rules and restores 1-1 routing for all message types
-    - a dictionary defining the router rule; closely follows the format used by the fluidsynth command shell
+    - a dictionary defining a router rule; closely follows the format used by the fluidsynth command shell
       - *type* (required) - one of the message types defined by fluidsynth; if this is all that is given routing defaults to 1-1 for this type
       - *chan* - a sequence describing the channel routing in the form *min, max, mul, add*, where *min-max* is the incoming channel range to accept, and the channel number is then multiplied by *mul* and added to *add*.
       - *par1* - routes parameter 1 (e.g note value or CC value) in the same way as *chan*
@@ -71,4 +71,5 @@ The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.
       - *cc* - a dictionary of control change numbers: values(0-127) to send on this channel when the patch is selected. Any modified CC values will be saved to the patch if it is updated.
     - *router_rules* - router rules for this patch, applied after set-wide router rules; if no router rules are specified by set or patch defaults to 1-1 routing for all types
 
-
+## Included Soundfont
+The *ModWaves.sf2* soundfont is included as an example of using modulators in a soundfont. In this case, the resonance and cut-off frequency of the low-pass filter are routed to CC 70 and 74 (per the general MIDI spec), respectively. This allows a MIDI controller to modify these values interactively by sending control change messages. Modulators can be used to control a wide range of synthesis parameters in FluidSynth (e.g. ADSR envelope, LFO frequency/depth, modulation envelope, etc.), making FluidSynth a very powerful and versatile live softsynth. I highly recommend [Polyphone](http://polyphone-soundfonts.com/en/) for editing soundfonts.
