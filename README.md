@@ -12,7 +12,7 @@ This project provides the software front-end for a soundfont-playing sound modul
 - 2 momentary stompswitches
 - 2 1/4" TRS jacks
 
-![SquishBox schematic](/images/hat_wiring.png)
+![SquishBox schematic](/images/hat_wiring.jpg)
 
 The `stompboxpi.py` python script provides library functions to initialize the LCD, poll the buttons, and display menus and allow crude text entry, while `squishbox.py` is the interface, calling and interacting with Fluidsynth using [PyFluidSynth](https://github.com/nwhitehead/pyfluidsynth).
 
