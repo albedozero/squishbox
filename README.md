@@ -1,75 +1,135 @@
 # SquishBox
-Python fluidsynth wrapper/interface for a stompbox sound module powered by fluidsynth (because that's what happens if you stomp on a box full of fluid).
+Python fluidsynth wrapper/interface for a stompbox sound module powered by [Fluidsynth](http://www.fluidsynth.org) (because that's what happens if you stomp on a box full of fluid).
+
+![SquishBox image](/images/squishbox_relief1.jpg)
 
 ## Explanation
-This project provides the software front-end for a sound module consisting of a small linux SBC (e.g. a Raspberry Pi) connected to a 16x2 character LCD, a couple of momentary stompswitches for user input, and a USB sound card for audio output. An example is described in [this instructable](https://www.instructables.com/id/Raspberry-Pi-Stompbox-Synth-Module/). The end result could look something like this:
+This project provides the software front-end for a soundfont-playing sound module consisting of a small linux SBC (e.g. a Raspberry Pi) connected to an LCD, a couple of momentary stompswitches for user input, and an external sound card for hi-def audio output. More details of the project are described [Hackaday.io](https://hackaday.io/project/9097-jampi). This version assumes the following components:
 
-![SquishBox image](/images/example.jpg)
+- Raspberry Pi 3 SBC
+- PCM5102 DAC
+- 16x2 Character LCD
+- 2 momentary stompswitches
+- 2 1/4" TRS jacks
 
-The wiring could be realized as in this diagram:
+![SquishBox schematic](/images/hat_wiring.png)
 
-![SquishBox schematic](/images/squishboxhat.png)
-The *squishbox.py* python script controls the LCD, handles the buttons, and uses the included version of the [PyFluidSynth]() library *fluidsynth.py* to call and interact with fluidsynth.
+The `stompboxpi.py` python script provides library functions to initialize the LCD, poll the buttons, and display menus and allow crude text entry, while `squishbox.py` is the interface, calling and interacting with Fluidsynth using [PyFluidSynth](https://github.com/nwhitehead/pyfluidsynth).
 
 ## Installation
-Files in the package may be copied to any convenient place (i.e. */home/pi*). [FluidSynth](http://www.fluidsynth.org) must be installed. On Raspbian the simplest method is to use aptitude from the command line:
+Full images can be found in the [releases](https://github.com/albedozero/squishbox/releases) section, and can be written to a micro SD card (4GB+) using the standard methods.
+
+## Manual Installation
+Files should be copied to the *pi* user's home directory `/home/pi`). [FluidSynth](http://www.fluidsynth.org) must be installed. On Raspbian the simplest method is to use aptitude from the command line:
 ```
 sudo apt-get install fluidsynth
 ```
-The Python script requires non-standard libraries RPi.GPIO, PyYaml, and RPLCD. Recent versions of Raspbian should have the first installed by default. The second two can be installed from PyPI by entering:
+Newer versions of Fluidsynth can be built from source and used by modifying `fluidsynth.py`. For example, fluidsynth-2_0_3.py has been modified to point to the shared object library compiled into `fluidsynth-2.0.3/build/src/`.
+
+Install some needed python modules. You might need to do a `sudo apt-get install python3-pip` first.
 ```
-sudo pip install RPLCD pyyaml
+sudo pip install RPi.GPIO pyyaml
 ```
-The user will most likely want the software to run at bootup. To effect this, modify the */etc/rc.local* file, adding the following just before the final `exit 0` line:
+This setup also uses the deprecated (but still fine) [Adafruit Python CharLCD](https://github.com/adafruit/Adafruit_Python_CharLCD) library. Clone it wherever on your pi, then run
 ```
-sudo python /home/pi/squishbox.py &
+sudo python3 setup.py install
 ```
+To activate the sound card, create the file `/etc/asound.conf` and enter the following:
+```
+pcm.!default  {
+ type hw card 0
+}
+ctl.!default {
+ type hw card 0
+}
+```
+Next, edit `/boot/config.txt`, add the following line:
+```
+dtoverlay=hifiberry-dac
+```
+and make sure this line is commented:
+```
+#dtparam=audio=on
+```
+If you encounter sound issues, check the full instructions for the [Pimoroni DAC](https://learn.pimoroni.com/tutorial/phat/raspberry-pi-phat-dac-install).
+
+The interface works best when installed as a service, so that it runs at startup. Create a `squishbox.service` file in `/etc/systemd/system/`:
+```
+[Unit]
+Description=SquishBox
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/squishbox.py
+User=root
+WorkingDirectory=/home/pi
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+and then enter `sudo systemctl enable squishbox`.
+
+### Web Configuration Panel
+
+The index.php file contains a web configuration panel that makes it easy to edit the configuration and patches of the Squishbox remotely, but requires a lot of setup to work. First, install the nginx web server with php:
+```
+sudo apt-get install nginx php-fpm
+```
+Next, in the file `/etc/nginx/sites-enabled/`, change the line
+```
+index index.html index.htm;
+```
+to
+```
+index index.php index.html index.htm;
+```
+and uncomment the lines
+```
+location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/var/run/php5-fpm.sock;
+}
+```
+To install the YaML extension in PHP, execute
+```
+sudo apt-get install libyaml-dev
+sudo apt-get install php-dev
+sudo pecl install yaml
+```
+Copy `index.php` to `/var/www/html`. To allow the web server to write to `/home/pi`, execute `sudo chmod a+rwx /home/pi`, and type `sudo visudo` to add the following line to the `/etc/sudoers` file:
+```
+www-data ALL=(ALL) NOPASSWD: ALL
+```
+You may also need to execute a `sudo chmod a+rw /home/pi/*.yaml`. Now you can access the web configuration panel by pointing a browser at the Pi's IP address.
 
 ## Usage
-Short taps of either button will switch between instrument patches. Holding either button for a approximately two seconds enters a settings menu, and holding either button for roughly five seconds provides the option to restart the program, reboot the Pi, or shut the Pi down. The settings menu options are:
-- Update Patch - saves any changes made to the current patch to file
-- Save New Patch - saves the current patch and any changes as a new patch
-- Choose Bank - allows switching between any number of patch sets specified in the config file
-- Set Gain - set the overall output volume (fluidsynth's 'gain' option), too high gives distorted output
-- Chorus/Reverb - enter a sub-menu to modify the current set's reverb and chorus settings
-- MIDI Connect - attempts to connect a USB MIDI device to fluidsynth
-- Bluetooth Pair - put the computer in discovery mode so another bluetooth device can be paired with it
-- Wifi Status - report the current IP address
+Short taps of either button will switch between instrument patches or soundfont presets. Long-pressing (~2sec) right will enter the patch/soundfont menu, and long-pressing left will open the options menu.
 
-## Configuration
-The *config_squishbox.yaml* is written in the [YAML](http://www.yaml.org/spec/1.2/spec.html) format and specifies things such as patch/effect settings, soundfont locations, and MIDI routing. The included file can be extensively modified to use different soundfonts and produce different patches and behavior. The expected structure of the file is:
+- Patch Menu
+  - Update Patch – Save the current patch with any updated control change/program change values
+  - Save New Patch – Save the current patch and any updated control change/program change values as a new patch
+  - Rename Patch – Enter a new name for the current patch using the cumbersome stompbox button text entry method
+  - Delete Patch – Delete the current patch. Can’t do this if it’s the only patch left
+- Soundfont Menu
+  - Save as New Patch – Create a new patch in the current bank with the current soundfont preset loaded into MIDI channel 1
+  - Exit Soundfont – Unload the current soundfont and return to patch mode
+- Options Menu
+  - Switch Bank – Load a different bank
+  - Save as New Bank – Create a new bank from the current set of patches. Will suggest a name that can be modified with text entry. Scroll to the end of the name and long-press right to save.
+  - Set Gain – Change the gain (volume) level of fluidsynth. Higher gain values are louder but require more simultaneous voices and thus processing power.
+  - Chorus/Reverb – Modify the parameters of the chorus/reverb unit.
+  - Advanced.. – Open the advanced options menu
+  - Power Down – Shut down the Squishbox. You can always just unplug, but there is a risk of corrupting the SD card if you do.
+- Advanced Options Menu
+  - Open Soundfont – Choose an .sf2 file from the pi user’s home directory (/home/pi), open it, and switch to soundfont mode, in which the user can scroll through presets in the soundfont file.
+  - MIDI Reconnect – Detect any connected MIDI controllers and attempt to link them to fluidsynth.
+  - Wifi Settings – Show the current network name and IP address if connected. Tapping left or right reveals an option to add a network name and passkey using the stompswitches.
+  - Add From USB – Hunts for a connected USB drive, finds all .sf2 files on it, and copies them to your Squishbox. Preserves folder structure, so if you have your fonts organized into different folders on your USB they will stay that way on the Squishbox.
+    
 
-- *settings* - a dictionary of global program settings
-  - *sfdirs* (required) - sequence of paths to search for soundfonts used in patches
-  - *gain* - initial gain level for fluidsynth
-  - *fluidsettings* - dictionary of options: values to pass directly to fluidsynth
-  - *soundfont* - a default soundfont file to use for all patches if not specified by the patch
-- *sets* - a sequence of patch lists and chorus, reverb, and MIDI router settings for each one
-  - *chorus_level* - output level of chorus unit
-  - *chorus_nr* - number of delay lines for chorus
-  - *chorus_depth* - modulation depth (ms)
-  - *chorus_speed* - modulation speed in Hz
-  - *chorus_type* - 0 or 1, where 0=sine and 1=triangle
-  - *reverb_level* - output level of reverb unit
-  - *reverb_roomsize* - size of the room simulated by reverb
-  - *reverb_width* - amount of early reflection (brightness) of reverb
-  - *reverb_damping* - high-frequency damping amount
-  - *router_rules* - a sequence of MIDI message routing rules to send to fluidsynth when each patch in this set is selected; a rule can be one of the following:
-    - *clear* - clears any previous routing rules
-    - *default* - clears any previous routing rules and restores 1-1 routing for all message types
-    - a dictionary defining a router rule; closely follows the format used by the fluidsynth command shell
-      - *type* (required) - one of the message types defined by fluidsynth; if this is all that is given routing defaults to 1-1 for this type
-      - *chan* - a sequence describing the channel routing in the form *min, max, mul, add*, where *min-max* is the incoming channel range to accept, and the channel number is then multiplied by *mul* and added to *add*.
-      - *par1* - routes parameter 1 (e.g note value or CC value) in the same way as *chan*
-      - *par2* - routes parameter 2 if there is one (e.g. note velocity)
-  - *patches* a sequence of patches, where each patch is a dictionary containing the following items
-    - *name* (required) - this text is displayed on the LCD when the patch is selected
-    - *0-15* - the MIDI channel the following soundfont preset will be applied to; N.B. not all channels have to be assigned; channels with no assignment will retain whatever preset they were last assigned
-      - *soundfont* - a soundfont file
-      - *bank* (required) - the bank number in the soundfont file
-      - *program* (required) - the program number in the soundfont file
-      - *cc* - a dictionary of control change numbers: values(0-127) to send on this channel when the patch is selected. Any modified CC values will be saved to the patch if it is updated.
-    - *router_rules* - router rules for this patch, applied after set-wide router rules; if no router rules are specified by set or patch defaults to 1-1 routing for all types
+Configuration files are in the [YAML](http://www.yaml.org/spec/1.2/spec.html) format. The file `squishbox_settings.yaml` contains global settings for the squishbox, and `bank0.yaml` contains some default patches. Both have enough comments that their structure should be easily understood. Additional bank files can be created as desired.
 
 ## Included Soundfont
-The *ModWaves.sf2* soundfont is included as an example of using modulators in a soundfont. In this case, the resonance and cut-off frequency of the low-pass filter are routed to CC 70 and 74 (per the general MIDI spec), respectively. This allows a MIDI controller to modify these values interactively by sending control change messages. Modulators can be used to control a wide range of synthesis parameters in FluidSynth (e.g. ADSR envelope, LFO frequency/depth, modulation envelope, etc.), making FluidSynth a very powerful and versatile live softsynth. I highly recommend [Polyphone](http://polyphone-soundfonts.com/en/) for editing soundfonts.
+The *ModWaves.sf2* soundfont is included as an example of using modulators in a soundfont. In this case, the resonance and cut-off frequency of the low-pass filter are routed to CC 70 and 74 (per the general MIDI spec), respectively. This allows a MIDI controller to modify these values interactively by sending control change messages. Modulators can be used to control a wide range of synthesis parameters in FluidSynth (e.g. ADSR envelope, LFO frequency/depth, modulation envelope, etc.), making FluidSynth a very powerful and versatile live softsynth. I highly recommend [Polyphone](http://polyphone-soundfonts.com/en/) for editing soundfonts. The [soundfont specification](https://en.wikipedia.org/wiki/SoundFont) can be a useful reference when editing soundfonts.

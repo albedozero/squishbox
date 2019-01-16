@@ -38,12 +38,16 @@ except NameError:
 # A short circuited or expression to find the FluidSynth library
 # (mostly needed for Windows distributions of libfluidsynth supplied with QSynth)
 
+"""
 lib = find_library('fluidsynth') or \
     find_library('libfluidsynth') or \
     find_library('libfluidsynth-1')
 
 if lib is None:
     raise ImportError("Couldn't find the FluidSynth library.")
+"""
+    
+lib="/home/pi/fluidsynth-2.0.3/build/src/libfluidsynth.so"
     
 # Dynamically link the FluidSynth library
 _fl = CDLL(lib)
@@ -115,17 +119,6 @@ fluid_synth_program_select = cfunc('fluid_synth_program_select', c_int,
 fluid_synth_unset_program = cfunc('fluid_synth_unset_program', c_int,
                                    ('synth', c_void_p, 1),
                                    ('chan', c_int, 1))
-
-fluid_synth_get_program = cfunc('fluid_synth_get_program', c_int,
-                                ('synth', c_void_p, 1),
-                                ('chan', c_int, 1),
-                                ('sfont_id', POINTER(c_int), 1),
-                                ('bank_num', POINTER(c_int), 1),
-                                ('preset_num', POINTER(c_int), 1))
-                                
-fluid_synth_get_sfont_by_id = cfunc('fluid_synth_get_sfont_by_id', c_void_p,
-                                    ('synth', c_void_p, 1),
-                                    ('id', c_int, 1))
 
 fluid_synth_noteon = cfunc('fluid_synth_noteon', c_int,
                            ('synth', c_void_p, 1),
@@ -225,119 +218,29 @@ fluid_synth_handle_midi_event = cfunc('fluid_synth_handle_midi_event', POINTER(c
                                ('data', c_void_p, 1),
                                ('event', c_void_p, 1))
 
-# some hacks for compatibility with fluidsynth <2
-try:
-    new_fluid_cmd_handler=cfunc('new_fluid_cmd_handler', c_void_p,
-                                   ('synth', c_void_p, 1),
-                                   ('router', c_void_p, 1))
+new_fluid_cmd_handler=cfunc('new_fluid_cmd_handler', c_void_p,
+                               ('synth', c_void_p, 1),
+                               ('router', c_void_p, 1))
 
-    fluid_preset_get_name = cfunc('fluid_preset_get_name', c_char_p,
-                                  ('preset', c_void_p, 1))
+fluid_synth_get_program = cfunc('fluid_synth_get_program', c_int,
+                                ('synth', c_void_p, 1),
+                                ('chan', c_int, 1),
+                                ('sfont_id', POINTER(c_int), 1),
+                                ('bank_num', POINTER(c_int), 1),
+                                ('preset_num', POINTER(c_int), 1))
+                                
+fluid_preset_get_name = cfunc('fluid_preset_get_name', c_char_p,
+                              ('preset', c_void_p, 1))
 
-    fluid_sfont_get_preset = cfunc('fluid_sfont_get_preset', c_void_p,
-                                   ('sfont', c_void_p, 1),
-                                   ('banknum', c_int, 1),
-                                   ('prognum', c_int, 1))
+fluid_sfont_get_preset = cfunc('fluid_sfont_get_preset', c_void_p,
+                               ('sfont', c_void_p, 1),
+                               ('banknum', c_int, 1),
+                               ('prognum', c_int, 1))
 
-    fluid_synth_set_reverb_roomsize = cfunc('fluid_synth_set_reverb_roomsize', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('roomsize', c_double, 1))
+fluid_synth_get_sfont_by_id = cfunc('fluid_synth_get_sfont_by_id', c_void_p,
+                                    ('synth', c_void_p, 1),
+                                    ('id', c_int, 1))
 
-    fluid_synth_set_reverb_damp = cfunc('fluid_synth_set_reverb_damp', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('damping', c_double, 1))
-
-    fluid_synth_set_reverb_level = cfunc('fluid_synth_set_reverb_level', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('level', c_double, 1))
-
-    fluid_synth_set_reverb_width = cfunc('fluid_synth_set_reverb_width', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('width', c_double, 1))
-              
-    fluid_synth_set_chorus_nr = cfunc('fluid_synth_set_chorus_nr', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('nr', c_int, 1))
-
-    fluid_synth_set_chorus_level = cfunc('fluid_synth_set_chorus_level', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('level', c_double, 1))
-
-    fluid_synth_set_chorus_type = cfunc('fluid_synth_set_chorus_type', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('type', c_int, 1))
-
-    fluid_synth_set_chorus_speed = cfunc('fluid_synth_set_chorus_speed', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('speed', c_double, 1))
-
-    fluid_synth_set_chorus_depth = cfunc('fluid_synth_set_chorus_depth', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('depth', c_double, 1))
-
-    fluid_synth_set_reverb = cfunc('fluid_synth_set_reverb', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('roomsize', c_double, 1),
-                                        ('damping', c_double, 1),
-                                        ('width', c_double, 1),
-                                        ('level', c_double, 1))
-
-    fluid_synth_set_chorus = cfunc('fluid_synth_set_chorus', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('nr', c_int, 1),
-                                        ('level', c_double, 1),
-                                        ('speed', c_double, 1),
-                                        ('depth_ms', c_double, 1),
-                                        ('type', c_int, 1))
-                                            
-    fluid_synth_get_chorus_speed = cfunc('fluid_synth_get_chorus_speed', c_double,
-                                         ('synth', c_void_p, 1))
-
-    fluid_synth_get_chorus_depth = cfunc('fluid_synth_get_chorus_depth', c_double,
-                                         ('synth', c_void_p, 1))
-
-except AttributeError:
-    fluid_synth_set_midi_router = cfunc('fluid_synth_set_midi_router', None,
-                                   ('synth', c_void_p, 1),
-                                   ('router', c_void_p, 1))
-
-    class fluid_synth_channel_info_t(Structure):
-        _fields_ = [
-            ('assigned', c_int),
-            ('sfont_id', c_int),
-            ('bank', c_int),
-            ('program', c_int),
-            ('name', c_char*32),
-            ('reserved', c_char*32)]
-
-    fluid_synth_get_channel_info = cfunc('fluid_synth_get_channel_info', c_int,
-                                      ('synth', c_void_p, 1),
-                                      ('chan', c_int, 1),
-                                      ('info', POINTER(fluid_synth_channel_info_t), 1))
-                                      
-    fluid_synth_set_reverb_full = cfunc('fluid_synth_set_reverb_full', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('set', c_int, 1),
-                                        ('roomsize', c_double, 1),
-                                        ('damping', c_double, 1),
-                                        ('width', c_double, 1),
-                                        ('level', c_double, 1))
-
-    fluid_synth_set_chorus_full = cfunc('fluid_synth_set_chorus_full', c_int,
-                                        ('synth', c_void_p, 1),
-                                        ('set', c_int, 1),
-                                        ('nr', c_int, 1),
-                                        ('level', c_double, 1),
-                                        ('speed', c_double, 1),
-                                        ('depth_ms', c_double, 1),
-                                        ('type', c_int, 1))
-                                            
-    fluid_synth_get_chorus_speed_Hz = cfunc('fluid_synth_get_chorus_speed_Hz', c_double,
-                                        ('synth', c_void_p, 1))
-
-    fluid_synth_get_chorus_depth_ms = cfunc('fluid_synth_get_chorus_depth_ms', c_double,
-                                        ('synth', c_void_p, 1))
-                                        
 fluid_synth_get_reverb_roomsize = cfunc('fluid_synth_get_reverb_roomsize', c_double,
                                     ('synth', c_void_p, 1))
 
@@ -350,6 +253,11 @@ fluid_synth_get_reverb_level = cfunc('fluid_synth_get_reverb_level', c_double,
 fluid_synth_get_reverb_width = cfunc('fluid_synth_get_reverb_width', c_double,
                                     ('synth', c_void_p, 1))
 
+fluid_synth_get_chorus_speed = cfunc('fluid_synth_get_chorus_speed', c_double,
+                                     ('synth', c_void_p, 1))
+
+fluid_synth_get_chorus_depth = cfunc('fluid_synth_get_chorus_depth', c_double,
+                                     ('synth', c_void_p, 1))
                                     
 fluid_synth_get_chorus_nr = cfunc('fluid_synth_get_chorus_nr', c_int,
                                     ('synth', c_void_p, 1))
@@ -360,6 +268,57 @@ fluid_synth_get_chorus_level = cfunc('fluid_synth_get_chorus_level', c_double,
 fluid_synth_get_chorus_type = cfunc('fluid_synth_get_chorus_type', c_int,
                                     ('synth', c_void_p, 1))
 
+fluid_synth_set_reverb_roomsize = cfunc('fluid_synth_set_reverb_roomsize', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('roomsize', c_double, 1))
+
+fluid_synth_set_reverb_damp = cfunc('fluid_synth_set_reverb_damp', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('damping', c_double, 1))
+
+fluid_synth_set_reverb_level = cfunc('fluid_synth_set_reverb_level', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('level', c_double, 1))
+
+fluid_synth_set_reverb_width = cfunc('fluid_synth_set_reverb_width', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('width', c_double, 1))
+          
+fluid_synth_set_chorus_nr = cfunc('fluid_synth_set_chorus_nr', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('nr', c_int, 1))
+
+fluid_synth_set_chorus_level = cfunc('fluid_synth_set_chorus_level', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('level', c_double, 1))
+
+fluid_synth_set_chorus_type = cfunc('fluid_synth_set_chorus_type', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('type', c_int, 1))
+
+fluid_synth_set_chorus_speed = cfunc('fluid_synth_set_chorus_speed', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('speed', c_double, 1))
+
+fluid_synth_set_chorus_depth = cfunc('fluid_synth_set_chorus_depth', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('depth', c_double, 1))
+                                        
+fluid_synth_set_reverb = cfunc('fluid_synth_set_reverb', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('roomsize', c_double, 1),
+                                    ('damping', c_double, 1),
+                                    ('width', c_double, 1),
+                                    ('level', c_double, 1))
+
+fluid_synth_set_chorus = cfunc('fluid_synth_set_chorus', c_int,
+                                    ('synth', c_void_p, 1),
+                                    ('nr', c_int, 1),
+                                    ('level', c_double, 1),
+                                    ('speed', c_double, 1),
+                                    ('depth_ms', c_double, 1),
+                                    ('type', c_int, 1))
+                                        
 # fluid sequencer
 new_fluid_sequencer2 = cfunc('new_fluid_sequencer2', c_void_p,
                              ('use_system_timer', c_int, 1))
@@ -547,10 +506,7 @@ class Synth:
             assert (midi_driver in ['alsa_seq', 'alsa_raw', 'oss', 'winmidi', 'midishare', 'coremidi'])
             fluid_settings_setstr(self.settings, b'midi.driver', midi_driver.encode())
             self.router = new_fluid_midi_router(self.settings, fluid_synth_handle_midi_event, self.synth)
-            try:
-                new_fluid_cmd_handler(self.synth, self.router)
-            except NameError:
-                fluid_synth_set_midi_router(self.synth, self.router)
+            new_fluid_cmd_handler(self.synth, self.router)
             self.midi_driver = new_fluid_midi_driver(self.settings, fluid_midi_router_handle_midi_event, self.router)
     def delete(self):
         if self.audio_driver is not None:
@@ -569,18 +525,6 @@ class Synth:
     def program_unset(self, chan):
         """Set the preset of a MIDI channel to an unassigned state"""
         return fluid_synth_unset_program(self.synth, chan)
-    def channel_info(self, chan):
-        """
-        get soundfont, bank, prog, preset name of channel
-        superceded by program_info and sfpreset_name, included for backwards-compatibility
-        """
-        try:
-            info=fluid_synth_channel_info_t()
-            fluid_synth_get_channel_info(self.synth, chan, byref(info))
-            return (info.sfont_id, info.bank, info.program, info.name)
-        except NameError:
-            (sfontid, banknum, prognum) = self.program_info(chan)
-            return (sfontid, banknum, prognum, self.sfpreset_name(sfontid, banknum, prognum))
     def program_info(self, chan):
         sfontid=c_int()
         banknum=c_int()
@@ -635,25 +579,13 @@ class Synth:
         if self.router is not None:
             fluid_midi_router_rule_set_param2(self.router.cmd_rule, min, max, mul, add)
     def set_reverb(self, roomsize=-1.0, damping=-1.0, width=-1.0, level=-1.0):
-        """
+        """                                  
         roomsize Reverb room size value (0.0-1.0)
         damping Reverb damping value (0.0-1.0)
         width Reverb width value (0.0-100.0)
         level Reverb level value (0.0-1.0)
         """
-        try:
-            return fluid_synth_set_reverb(self.synth, roomsize, damping, width, level)
-        except NameError:
-            set=0
-            if roomsize>=0:
-                set+=0b0001
-            if damping>=0:
-                set+=0b0010
-            if width>=0:
-                set+=0b0100
-            if level>=0:
-                set+=0b1000
-            return fluid_synth_set_reverb_full(self.synth, set, roomsize, damping, width, level)
+        return fluid_synth_set_reverb(self.synth, set, roomsize, damping, width, level)
     def set_chorus(self, nr=-1, level=-1.0, speed=-1.0, depth=-1.0, type=-1):
         """                                  
         nr Chorus voice count (0-99, CPU time consumption proportional to this value)
@@ -662,21 +594,7 @@ class Synth:
         depth_ms Chorus depth (max value depends on synth sample rate, 0.0-21.0 is safe for sample rate values up to 96KHz)
         type Chorus waveform type (0=sine, 1=triangle)
         """
-        try:
-            return fluid_synth_set_reverb(self.synth, roomsize, damping, width, level)
-        except NameError:
-            set=0
-            if nr>=0:
-                set+=0b00001
-            if level>=0:
-                set+=0b00010
-            if speed>=0:
-                set+=0b00100
-            if depth>=0:
-                set+=0b01000
-            if type>=0:
-                set+=0b10000
-            return fluid_synth_set_reverb_full(self.synth, set, roomsize, damping, width, level)
+        return fluid_synth_set_reverb(self.synth, set, roomsize, damping, width, level)
     def set_reverb_roomsize(self, roomsize):
         return fluid_synth_set_reverb_roomsize(self.synth, roomsize)
     def set_reverb_damp(self, damp):

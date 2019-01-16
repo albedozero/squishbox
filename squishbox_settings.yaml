@@ -1,0 +1,10 @@
+# global squishbox settings 
+
+# below are the best balance between low latency/good sound quality I've found, feel free to experiment
+fluidsettings: {audio.period-size: 64, audio.periods: 3} # settings passed directly to fluidsynth
+# use an alternate version of fluidsynth if it's available
+# fluidversion: fluidsynth-2_0_3
+initialbank: bank0.yaml
+currentbank: bank0.yaml
+uselastbank: True
+soundfont: 

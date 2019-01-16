@@ -1,0 +1,68 @@
+# aliases you can use to refer to soundfonts instead of giving the full path
+soundfonts: {fluidGM: /usr/share/sounds/sf2/FluidR3_GM.sf2}
+gain: 0.4
+# chorus/reverb unit settings
+# not all have to be specified
+reverb_level: 0.9
+reverb_roomsize: 0.2
+reverb_width: 0.5
+# these router rules apply to all patches in the bank
+router_rules:
+- {type: note} # just the type with no parameters means 1-1 routing
+# - {type: prog} # you may or may not want your controller to send program changes to fluidsynth
+- {type: pbend}
+# rule route a knob on my controller to midi volume
+- type: cc
+  chan: [0, 0, 0, 0] # [min, max, multiplier, add]
+  par1: [19, 19, 0, 7] # [min, max, multiplier, add]
+- {type: cc, chan: [0, 0, 0, 0], par1: [19, 19, 0, 7]} 
+- {type: cc, chan: [0, 0, 0, 1], par1: [19, 19, 0, 7]} # also send it to midi channel 2
+- {type: cc, chan: [0, 0, 0, 9], par1: [19, 19, 0, 7]} # and midi channel 10
+patches:
+- name: Jazz Combo
+  0: # MIDI channel 1 (channels indexed from 0)
+    soundfont: fluidGM
+    program: 0
+    bank: 0
+  1: {bank: 0, program: 33, soundfont: fluidGM} # MIDI channel 2, compact form
+  9: {bank: 128, program: 0, soundfont: fluidGM} # drums
+  router_rules:
+  - {type: cc, chan: [0, 15, 1, 0], par1: [64, 64, 1, 0]} # sustain pedal routing
+- name: Back to the EP
+  0: {bank: 0, program: 5, soundfont: fluidGM}
+  # bug/pro-tip: unspecified channels will remain at previous settings
+  router_rules:
+  - {type: cc, chan: [0, 15, 1, 0], par1: [0, 127, 1, 0]}  # 1-1 routing
+  - {type: cpress} # no parameters defaults to 1-1 routing
+- name: Kill The Bass Player
+  0: {bank: 0, program: 38, soundfont: fluidGM}
+  router_rules:
+  - {type: cc}
+  - {type: note, chan: [0, 0, 1, 0], par1: [24, 127, 1, -24]} # 2x octave pedal for nastiness
+- name: Keytar Bear
+  0: {bank: 8, program: 28, soundfont: fluidGM}
+  router_rules:
+  - {type: cc}
+- name: Prince Horns
+  0:
+    bank: 0
+    program: 62
+    soundfont: fluidGM
+    cc: {7: 60} # a CC value that is sent to this channel when the patch is loaded
+  router_rules:
+  - {type: cc}
+- name: Sick Leads
+  0: {bank: 0, program: 0, soundfont: ModWaves.sf2}
+  1: {bank: 0, program: 1, soundfont: ModWaves.sf2}
+  router_rules:
+  - clear # clears any previous routing
+  - {type: note, chan: [0, 15, 1, 0], par1: [0, 127, 1, 0], par2: [0, 127, 0, 127]} # ignore velocity like a retro synth
+  - {type: pbend}
+  - {type: cc}
+  - {type: kpress} # key aftertouch
+  - {type: cpress} # channel aftertouch
+  - {type: cc, chan: [0, 0, 0, 0], par1: [20, 20, 0, 74]} # knob to filter cutoff frequency
+  - {type: cc, chan: [0, 0, 0, 0], par1: [21, 21, 0, 70]} # knob to filter resonance
+  - {type: cc, chan: [0, 0, 0, 1], par1: [20, 20, 0, 74]} # filter cutoff frequency (for square)
+  - {type: cc, chan: [0, 0, 0, 1], par1: [21, 21, 0, 70]} # filter resonance (for square)
+  - {type: cc, chan: [0, 0, 0, 0], par1: [19, 19, 0, 7]}
