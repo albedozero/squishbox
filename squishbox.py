@@ -23,6 +23,7 @@ THE SOFTWARE.
 import time
 import re
 import yaml
+import mido
 from subprocess import call, check_output
 
 import stompboxpi as SB
@@ -127,6 +128,23 @@ def select_patch(p):
                 midi_route(**rule)
     if 'rule' not in locals():
         fluid.router_default()
+    if 'sysex' in p:
+        ports={}
+        try:
+            for msg in p['sysex']:
+                if msg[0] not in ports:
+                    ports[msg[0]]=mido.open_output(msg[0])
+                if isinstance(msg[1], int):
+                    messages=[msg[1:]]
+                else: # must be a .syx filename
+                    messages = mido.read_syx_file(msg[1])
+                for msgdata in messages:
+                    ports[msg[0]].send(mido.Message('sysex', data=msgdata))
+            for x in ports.keys():
+                ports[x].close()
+        except:
+            SB.lcd_message("SYSEX error!    ",1)
+            SB.waitforrelease(1)
     for ch in range(16):
         if ch not in p:
             continue
