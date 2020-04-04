@@ -1,3 +1,5 @@
+This library is deprecated and has been superseded by [FluidPatcher](https://github.com/albedozero/fluidpatcher). Support for the SquishBox can be found at [Geek Funk Labs](http://geekfunklabs.com/).
+
 # SquishBox
 Python fluidsynth wrapper/interface for a stompbox sound module powered by [Fluidsynth](http://www.fluidsynth.org) (because that's what happens if you stomp on a box full of fluid).
 
